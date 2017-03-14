@@ -15,7 +15,7 @@ def habitica(quiet=False,html=False,htmls=False,script=False,semanas=1,daily=Fal
        
        Opciones
        
-       quiet[False]       Sin mensajes de error
+       quiet[False]       Desactiva advertencias.
        html[False]        Salida html sin script para listas deplegables.
        htmls[False]       Salida html con script para listas deplegables
        script[False]      Solo muestra el script para listas deplegables.
@@ -64,7 +64,9 @@ def habitica(quiet=False,html=False,htmls=False,script=False,semanas=1,daily=Fal
     
     if quiet:
         #import sys
-        sys.stderr=open("/dev/null","w")
+        import warnings
+        warnings.simplefilter("ignore")
+        #sys.stderr=open("/dev/null","w")
     
     #Esto no puede estar hard-coded!!!
     #Puede introducirse de un archivo a traves de un import (ya está) o con kwallet (en el plasmoide)
@@ -256,7 +258,7 @@ if __name__=="__main__":
        import sys
        import os
        parser = argparse.ArgumentParser(description=u'Muestra tareas diarias y pendientes (con fecha) de habítica. La información del usuario puede ser introducida en el archivo %s/keys.py, o introducida con las opciones --api-user y --api-key'%(os.path.dirname(os.path.realpath(sys.argv[0]))))
-       parser.add_argument('-q','--quiet', action='store_true',  help='Sin mensajes de error.')
+       parser.add_argument('-q','--quiet', action='store_true',  help='Desactiva advertencias.')
 
        parser.add_argument('--html', action='store_true',  help='Salida html sin script para listas deplegables.')
        parser.add_argument('-hs','--htmls', action='store_true',  help='Salida html con script para listas deplegables.')
