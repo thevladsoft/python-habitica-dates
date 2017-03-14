@@ -15,6 +15,7 @@ salida=""
 import argparse
 parser = argparse.ArgumentParser(description=u'Muestra tareas diarias y pendientes (con fecha) de habítica. La información del usuario puede ser introducida en el archivo %s/keys.py, o introducida con las opciones --api-user y --api-key'%(os.path.dirname(os.path.realpath(sys.argv[0]))))
 parser.add_argument('-q','--quiet', action='store_true',  help='Sin mensajes de error.')
+#parser.add_argument('-v','--verbose', action='store_true',  help='Muestra la salida incluso si es importado desde otro script')#Esto no tiene sentido
 parser.add_argument('--html', action='store_true',  help='Salida html sin script para listas deplegables.')
 parser.add_argument('-hs','--htmls', action='store_true',  help='Salida html con script para listas deplegables.')
 parser.add_argument('--script', action='store_true',  help='Solo muestra el script para listas deplegables y sale.')
@@ -33,6 +34,12 @@ parser.add_argument('-ak','--api-key', help="Introduce la x-api-key de Habitica 
 
 args = parser.parse_args()
 
+#if __name__ != "__main__" and not args.verbose:
+if __name__ != "__main__":
+    verbose=False
+else:
+    verbose=True
+
 if args.script:
         salida+="""
     <script type="text/javascript">
@@ -49,7 +56,7 @@ if args.script:
   }
 }
 </script>\n"""
-	print (salida)
+	if verbose:print (salida)
         exit(0)
         
 
@@ -66,7 +73,7 @@ try:
     elif keys.api_user:
        api_user=keys.api_user
     else:
-       salida+= "Error: Necesita una identificación de usuario.\nVea https://habitica.com/#/options/settings/api"
+       salida+= "Error: Necesita una identificación de usuario.\nVea https://habitica.com/#/options/settings/api\n"
        print (salida,file=sys.stderr)
        sys.exit(1)
        
@@ -75,7 +82,7 @@ try:
     elif keys.api_key:
        api_key=keys.api_key
     else:
-       salida+= "Error: Necesita un token.\nVea https://habitica.com/#/options/settings/api"
+       salida+= "Error: Necesita un token.\nVea https://habitica.com/#/options/settings/api\n"
        print (salida,file=sys.stderr)
        sys.exit(1)
 except Exception:
@@ -83,14 +90,14 @@ except Exception:
     if args.api_user:
        api_user=args.api_user
     else:
-       salida+= "Error: Necesita una identificación de usuario.\nVea https://habitica.com/#/options/settings/api"
+       salida+= "Error: Necesita una identificación de usuario.\nVea https://habitica.com/#/options/settings/api\n"
        print (salida,file=sys.stderr)
        sys.exit(1)
        
     if args.api_key:
        api_key=args.api_key
     else:
-       salida+= "Error: Necesita un token.\nVea https://habitica.com/#/options/settings/api"
+       salida+= "Error: Necesita un token.\nVea https://habitica.com/#/options/settings/api\n"
        print (salida,file=sys.stderr)
        sys.exit(1)
 
@@ -107,13 +114,23 @@ mes = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septie
 
 calen = {}
 
+
+#Los dos siguientes no son considerados mensajes de error, sino información de la data recibida (o no recibida)
 try:
     u=requests.get("https://habitica.com/api/v3/tasks/user", headers=payload,timeout=30)
     U=u.json()
-except:
-    print ("No se pudo conectar")
-    exit(1)
-
+except Exception:
+    salida+="No se pudo conectar\n"
+    if verbose:print (salida)
+    sys.exit(1)
+try:
+  if U["data"]:
+      pass
+except Exception:
+      salida+="No se pudo obtener la data\n"
+      if verbose:print (salida)
+      sys.exit(1)
+    
 for i in U["data"]:
   if not args.to_do:
     if i["type"]== "daily" and i.has_key("everyX"):
@@ -158,7 +175,7 @@ claves.sort()
 
 if args.html or args.htmls:
     if args.htmls:
-        print ("""
+        salida+= """
     <script type="text/javascript">
  setTimeout(function(){window.stop()},30000)
  function swap(targetId){
@@ -172,51 +189,51 @@ if args.html or args.htmls:
                 
   }
 }
-</script>""")
+</script>\n"""
     #print "<ul>"
-    print ('<meta charset="utf-8"/>')
+    salida+= '<meta charset="utf-8"/>\n'
     cuentasemana = -1
     for j in claves:
 	if j == datetime.today().toordinal():
-	    print ("<ul>\n  <li><dl  onclick=\"swap('today');return false;\"><a style=\"text-decoration: underline;\"><b>Hoy:</b></a></dl><ul id='today' style='display: ;'>")
+	    salida+="<ul>\n  <li><dl  onclick=\"swap('today');return false;\"><a style=\"text-decoration: underline;\"><b>Hoy:</b></a></dl><ul id='today' style='display: ;'>\n"
 	else:
 	    if cuentasemana != datetime.fromordinal(j).isocalendar()[1]-datetime.today().isocalendar()[1]:
 		cuentasemana = datetime.fromordinal(j).isocalendar()[1]-datetime.today().isocalendar()[1]
 		if not j == datetime.today().toordinal() and Firstclose:
-		    print ("</div>")
-		    print ("</li>\n </ul>")
+		    salida+= "</div>\n"
+		    salida+= "</li>\n </ul>\n"
 		if cuentasemana:
-		    print ("<ul>\n  <li><dl  onclick=\"swap('semana%d');return false;\"><a style=\"text-decoration: underline;\"><b>Dentro de %d semana%s:</b></a></dl>"%(cuentasemana,cuentasemana,"s" if cuentasemana > 1 else ""))
-		    print ("   <div id='semana%d' style='display:none ;'>\n"%(cuentasemana))
+		    salida+= "<ul>\n  <li><dl  onclick=\"swap('semana%d');return false;\"><a style=\"text-decoration: underline;\"><b>Dentro de %d semana%s:</b></a></dl>"%(cuentasemana,cuentasemana,"s" if cuentasemana > 1 else "")+"\n"
+		    salida+= "   <div id='semana%d' style='display:none ;'>\n"%(cuentasemana)+"\n"
 		else:
-		    print ("<ul>\n  <li><dl  onclick=\"swap('estasemana');return false;\"><a style=\"text-decoration: underline;\"><b>En esta semana:</b></a></dl>")
-		    print ("   <div id='estasemana' style='display: ;'>\n")
+		    salida+= "<ul>\n  <li><dl  onclick=\"swap('estasemana');return false;\"><a style=\"text-decoration: underline;\"><b>En esta semana:</b></a></dl>\n"
+		    salida+= "   <div id='estasemana' style='display: ;'>\n"
     #            cambiasemana = False
                 Firstclose=True
-	    print ("   <ul>\n     <li><a>     <i>"+datetime.fromordinal(j).strftime("%s %%d de %s de %%Y"%(semana_es[datetime.fromordinal(j).weekday()],mes[datetime.fromordinal(j).month-1]))+":</i></a>")
-	    print ("       <ul>")
+	    salida+= "   <ul>\n     <li><a>     <i>"+datetime.fromordinal(j).strftime("%s %%d de %s de %%Y"%(semana_es[datetime.fromordinal(j).weekday()],mes[datetime.fromordinal(j).month-1]))+":</i></a>\n"
+	    salida+= "       <ul>\n"
 	for k in calen[j]:
-	    print ("        <li><a>          "+k.encode("utf8")+"</a></li>\n")
-	print ("       </ul>\n     </li>\n   </ul>\n")
-    print ("  </div></li>\n </ul>")
+	    salida+= "        <li><a>          "+k.encode("utf8")+"</a></li>\n"
+	salida+= "       </ul>\n     </li>\n   </ul>\n"
+    salida+= "  </div></li>\n </ul>\n"
 	#print "</ul>"
 else:
     cuentasemana = -1
     for j in claves:
 	if j == datetime.today().toordinal():
-	    print ("Hoy:")
+	    salida+= "Hoy:\n"
 	else:
 	    if cuentasemana != datetime.fromordinal(j).isocalendar()[1]-datetime.today().isocalendar()[1]:
 		cuentasemana = datetime.fromordinal(j).isocalendar()[1]-datetime.today().isocalendar()[1]
 		if cuentasemana:
-		    print ("Dentro de %d semana%s:"%(cuentasemana,"s" if cuentasemana > 1 else ""))
+		    salida+= "Dentro de %d semana%s:"%(cuentasemana,"s" if cuentasemana > 1 else "")+"\n"
 		else:
-		    print ("En esta semana:")
+		    salida+= "En esta semana:\n"
     #            cambiasemana = False
-	    print ("     "+datetime.fromordinal(j).strftime("%s %%d de %s de %%Y"%(semana_es[datetime.fromordinal(j).weekday()],mes[datetime.fromordinal(j).month-1]))+":")
+	    salida+= "     "+datetime.fromordinal(j).strftime("%s %%d de %s de %%Y"%(semana_es[datetime.fromordinal(j).weekday()],mes[datetime.fromordinal(j).month-1]))+":\n"
 	for k in calen[j]:
-	    print ("          "+k.encode("utf8")+"")
+	    salida+= "          "+k.encode("utf8")+"\n"
 	
-  
+if verbose:print (salida)
                 
                 
