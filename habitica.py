@@ -9,7 +9,7 @@ class MyError(Exception):
    #return Error
   
   
-def main(quiet=False,html=False,htmls=False,script=False,semanas=1,daily=False,to_do=False,prefijar_daily="",prefijar_to_do="",api_user="",api_key=""):    
+def habitica(quiet=False,html=False,htmls=False,script=False,semanas=1,daily=False,to_do=False,prefijar_daily="",prefijar_to_do="",api_user="",api_key=""):    
     """Muestra tareas diarias y pendientes (con fecha) de habítica. La información del usuario puede ser 
        introducida en el archivo keys.py, o introducida con las opciones api_user y api_key
        
@@ -291,7 +291,7 @@ if __name__=="__main__":
            #args.htmls = htmls
        #else:
        #verbose=True
-       print(main(quiet=args.quiet,html=args.html,htmls=args.htmls,script=args.script,semanas=args.semanas,daily=args.daily,to_do=args.to_do,\
+       print(habitica(quiet=args.quiet,html=args.html,htmls=args.htmls,script=args.script,semanas=args.semanas,daily=args.daily,to_do=args.to_do,\
          prefijar_daily=args.pd+args.prefijar_daily,prefijar_to_do=args.pt+args.prefijar_to_do,api_user=args.api_user,api_key=args.api_key))
        #print (args.api_user+"")
                 
