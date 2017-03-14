@@ -6,7 +6,6 @@ from __future__ import print_function
 
 class MyError(Exception):
    pass
-   #return Error
   
   
 def habitica(quiet=False,html=False,htmls=False,script=False,semanas=1,daily=False,to_do=False,prefijar_daily="",prefijar_to_do="",api_user="",api_key=""):    
@@ -32,8 +31,6 @@ def habitica(quiet=False,html=False,htmls=False,script=False,semanas=1,daily=Fal
                            Sobreescribe el valor en keys.py"""
 
     import requests
-    #import sys
-    #import os
     from datetime import datetime
     
     salida=""
@@ -55,21 +52,13 @@ def habitica(quiet=False,html=False,htmls=False,script=False,semanas=1,daily=Fal
       }
     }
     </script>\n"""
-            #if verbose:
-               #print (salida)
-               #sys.exit(0)
-            #else:
             return salida
             
     
     if quiet:
-        #import sys
         import warnings
         warnings.simplefilter("ignore")
-        #sys.stderr=open("/dev/null","w")
     
-    #Esto no puede estar hard-coded!!!
-    #Puede introducirse de un archivo a traves de un import (ya está) o con kwallet (en el plasmoide)
     if not api_user:
       try:
         import keys
@@ -82,44 +71,11 @@ def habitica(quiet=False,html=False,htmls=False,script=False,semanas=1,daily=Fal
         api_key=keys.api_key
       except Exception:
         raise MyError('Error: Necesita un token.\nVea https://habitica.com/#/options/settings/api\n')        
-        
-    #print(api_key)
-        
-        
-        
-        
-        #else:
-           #raise MyError('Error: Necesita una identificación de usuario.\nVea https://habitica.com/#/options/settings/api\n')
-           
-        #if args.api_key and not api_key:
-           #api_key=args.api_key
-        #elif keys.api_key and not api_key:
-           #api_key=keys.api_key
-        #else:
-             #raise MyError('Error: Necesita un token.\nVea https://habitica.com/#/options/settings/api\n')
-    #except Exception:
-        #if args.api_user and not api_user:
-           #api_user=args.api_user
-        #else:
-          ##if verbose:
-              ##salida+= "Error: Necesita una identificación de usuario.\nVea https://habitica.com/#/options/settings/api\n"
-              ##print (salida,file=sys.stderr)
-              ##sys.exit(1)
-          ##else:
-           #raise MyError('Error: Necesita una identificación de usuario.\nVea https://habitica.com/#/options/settings/api\n')
-           
-        #if args.api_key:
-           #api_key=args.api_key
-        #else:
-           #raise MyError('Error: Necesita un token.\nVea https://habitica.com/#/options/settings/api\n')
-###########################
-    
       
     payload = {"Content-Type":"application/json",'x-api-user': api_user,'x-api-key': api_key, }
     
     
     #El domingo es el dia 6, de manera que sumo los dias restantes de la semana.
-
     periodo=7*int(semanas)+6-datetime.today().weekday()
     
     semana = ["m","t","w","th","f","s","su"]
@@ -135,26 +91,17 @@ def habitica(quiet=False,html=False,htmls=False,script=False,semanas=1,daily=Fal
         U=u.json()
     except Exception:
         salida+="No se pudo conectar\n"
-        #if verbose:
-           #print (salida)
-           #sys.exit(1)
-        #else:
         return salida
     try:
       if U["data"]:
           pass
     except Exception:
           salida+="No se pudo obtener la data\n"
-          #if verbose:
-             #print (salida)
-             #sys.exit(1)
-          #else:
           return salida
     
     for i in U["data"]:
       if not to_do:
         if i["type"]== "daily" and i.has_key("everyX"):
-    #        print i["text"],i["everyX"],i["startDate"],i["repeat"]
             dia = datetime.strptime(i["startDate"], '%Y-%m-%dT%H:%M:%S.%fZ').toordinal()
             diasiguiente = datetime.today().toordinal()+i["everyX"]-(datetime.today().toordinal()- dia)%i["everyX"]
             #Primero hoy
@@ -168,14 +115,10 @@ def habitica(quiet=False,html=False,htmls=False,script=False,semanas=1,daily=Fal
             j=0
             #Todo este bloque podría ser escrito mejor, pero meh...
             if diasiguiente <= datetime.today().toordinal()+periodo:
-                #print i["text"],diasiguiente,datetime.today().toordinal()+periodo
                 while j<periodo:
-    #                print i["text"]
                     diasiguiente = datetime.fromordinal(datetime.today().toordinal()+i["everyX"]-(datetime.today().toordinal()- dia)%i["everyX"]+j)
-                    #print i["text"],diasiguiente,i["repeat"],j,diasiguiente.toordinal()
                     #La segunda parte del if es un sanity check necesario.
                     if i["repeat"][semana[diasiguiente.weekday()]] and diasiguiente.toordinal() <= datetime.today().toordinal()+periodo:
-    #                    print i["text"]+u" se repetirá el día "+diasiguiente.strftime("%%d de %s de %%Y"%(mes[diasiguiente.month-1]))
                         calen.setdefault(diasiguiente.toordinal(),[]).append(prefijar_daily+i["text"])
                     j+=i["everyX"]
                     
@@ -207,7 +150,6 @@ def habitica(quiet=False,html=False,htmls=False,script=False,semanas=1,daily=Fal
       }
     }
     </script>\n"""
-        #print "<ul>"
         salida+= '<meta charset="utf-8"/>\n'
         cuentasemana = -1
         for j in claves:
@@ -225,7 +167,6 @@ def habitica(quiet=False,html=False,htmls=False,script=False,semanas=1,daily=Fal
                     else:
                         salida+= "<ul>\n  <li><dl  onclick=\"swap('estasemana');return false;\"><a style=\"text-decoration: underline;\"><b>En esta semana:</b></a></dl>\n"
                         salida+= "   <div id='estasemana' style='display: ;'>\n"
-        #            cambiasemana = False
                     Firstclose=True
                 salida+= "   <ul>\n     <li><a>     <i>"+datetime.fromordinal(j).strftime("%s %%d de %s de %%Y"%(semana_es[datetime.fromordinal(j).weekday()],mes[datetime.fromordinal(j).month-1]))+":</i></a>\n"
                 salida+= "       <ul>\n"
@@ -233,7 +174,6 @@ def habitica(quiet=False,html=False,htmls=False,script=False,semanas=1,daily=Fal
                 salida+= "        <li><a>          "+k.encode("utf8")+"</a></li>\n"
             salida+= "       </ul>\n     </li>\n   </ul>\n"
         salida+= "  </div></li>\n </ul>\n"
-    #print "</ul>"
     else:
         cuentasemana = -1
         for j in claves:
@@ -246,7 +186,6 @@ def habitica(quiet=False,html=False,htmls=False,script=False,semanas=1,daily=Fal
                         salida+= "Dentro de %d semana%s:"%(cuentasemana,"s" if cuentasemana > 1 else "")+"\n"
                     else:
                         salida+= "En esta semana:\n"
-        #            cambiasemana = False
                 salida+= "     "+datetime.fromordinal(j).strftime("%s %%d de %s de %%Y"%(semana_es[datetime.fromordinal(j).weekday()],mes[datetime.fromordinal(j).month-1]))+":\n"
             for k in calen[j]:
                 salida+= "          "+k.encode("utf8")+"\n"
@@ -264,11 +203,8 @@ if __name__=="__main__":
        parser.add_argument('-hs','--htmls', action='store_true',  help='Salida html con script para listas deplegables.')
        parser.add_argument('--script', action='store_true',  help='Solo muestra el script para listas deplegables y sale.')
        parser.add_argument('-s','--semanas', default=1, help="Semanas extra a mostrar (default 1)")
-       #terminar
        parser.add_argument('-d','--daily', action='store_true',  help='Solo muestra las tareas \"diarias\"')
-       #Terminar
        parser.add_argument('-t','--to-do', action='store_true',  help='Solo muestra las tareas pendientes')
-       #Terminar
        parser.add_argument('--prefijar-daily', action='store_const',default="",const="(repite)",  help=u'Prefija las tareas diarias con (repite)')
        parser.add_argument('--prefijar-to-do', action='store_const',default="",const="(pendiente)",  help=u'Prefija las tareas pendientes con (pendiente)')
        parser.add_argument('-pd', action='store_const',default="",const="(R)",  help=u'Prefija las tareas diarias con (R)')
@@ -278,23 +214,6 @@ if __name__=="__main__":
        
        args = parser.parse_args()
        
-       #if __name__ != "__main__" and not args.verbose:
-       #if __name__ != "__main__":
-           #verbose=False
-           #Si no es ejecutado directamente tomo el valor dado a la función
-           #args.script = script
-           #args.to_do = to_do
-           #args.daily = daily
-           #args.semanas=semanas
-           #args.prefijar_daily=prefijar_daily
-           #args.prefijar_to_do=prefijar_to_do
-           #args.quiet = quiet
-           #args.html = html
-           #args.htmls = htmls
-       #else:
-       #verbose=True
        print(habitica(quiet=args.quiet,html=args.html,htmls=args.htmls,script=args.script,semanas=args.semanas,daily=args.daily,to_do=args.to_do,\
          prefijar_daily=args.pd+args.prefijar_daily,prefijar_to_do=args.pt+args.prefijar_to_do,api_user=args.api_user,api_key=args.api_key))
-       #print (args.api_user+"")
-                
                 
