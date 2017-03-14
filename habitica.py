@@ -4,10 +4,11 @@
 #Y hacerlo multi lenguaje, aunque no se como
 from __future__ import print_function
 
-class MyError(Exception):
-   pass
-  
-  
+class APIError(Exception):
+    import sys
+    sys.excepthook = lambda exctype,exc,traceback : print("{}: {}".format(exctype.__name__,exc))
+
+
 def habitica(quiet=False,html=False,htmls=False,script=False,semanas=1,daily=False,to_do=False,prefijar_daily="",prefijar_to_do="",api_user="",api_key=""):    
     """Muestra tareas diarias y pendientes (con fecha) de habítica. La información del usuario puede ser 
        introducida en el archivo keys.py, o introducida con las opciones api_user y api_key
@@ -64,13 +65,13 @@ def habitica(quiet=False,html=False,htmls=False,script=False,semanas=1,daily=Fal
         import keys
         api_user=keys.api_user
       except Exception:
-        raise MyError('Error: Necesita un token.\nVea https://habitica.com/#/options/settings/api\n')
+        raise APIError('Necesita una identificación de usuario.\nVea https://habitica.com/#/options/settings/api\n')
     if not api_key:
       try:
         import keys
         api_key=keys.api_key
       except Exception:
-        raise MyError('Error: Necesita un token.\nVea https://habitica.com/#/options/settings/api\n')        
+        raise APIError('Necesita un token.\nVea https://habitica.com/#/options/settings/api\n')        
       
     payload = {"Content-Type":"application/json",'x-api-user': api_user,'x-api-key': api_key, }
     
