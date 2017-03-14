@@ -1,10 +1,13 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+from __future__ import print_function
 import requests
 import sys
 import os
 from datetime import datetime
+
+salida=""
 
 
 #Podria traducir un poco
@@ -31,7 +34,7 @@ parser.add_argument('-ak','--api-key', help="Introduce la x-api-key de Habitica 
 args = parser.parse_args()
 
 if args.script:
-        print """
+        salida+="""
     <script type="text/javascript">
  setTimeout(function(){window.stop()},30000)
  function swap(targetId){
@@ -45,7 +48,8 @@ if args.script:
                 
   }
 }
-</script>"""
+</script>\n"""
+	print (salida)
         exit(0)
         
 
@@ -55,22 +59,41 @@ if args.quiet:
 
 #Esto no puede estar hard-coded!!!
 #Puede introducirse de un archivo a traves de un import (ya está) o con kwallet (en el plasmoide)
-import keys
-if keys.api_user:
-   api_user=keys.api_user
-elif args.api_user:
-   api_user=args.api_user
-else:
-   print "Error: Necesita una identificación de usuario.\nVea https://habitica.com/#/options/settings/api"
-   exit(1)
-   
-if keys.api_key:
-   api_key=keys.api_key
-elif args.api_key:
-   api_key=args.api_key
-else:
-   print "Error: Necesita un token.\nVea https://habitica.com/#/options/settings/api"
-   exit(1)
+try:
+    import keys
+    if args.api_user:
+       api_user=args.api_user
+    elif keys.api_user:
+       api_user=keys.api_user
+    else:
+       salida+= "Error: Necesita una identificación de usuario.\nVea https://habitica.com/#/options/settings/api"
+       print (salida,file=sys.stderr)
+       sys.exit(1)
+       
+    if args.api_key:
+       api_key=args.api_key
+    elif keys.api_key:
+       api_key=keys.api_key
+    else:
+       salida+= "Error: Necesita un token.\nVea https://habitica.com/#/options/settings/api"
+       print (salida,file=sys.stderr)
+       sys.exit(1)
+except Exception:
+    
+    if args.api_user:
+       api_user=args.api_user
+    else:
+       salida+= "Error: Necesita una identificación de usuario.\nVea https://habitica.com/#/options/settings/api"
+       print (salida,file=sys.stderr)
+       sys.exit(1)
+       
+    if args.api_key:
+       api_key=args.api_key
+    else:
+       salida+= "Error: Necesita un token.\nVea https://habitica.com/#/options/settings/api"
+       print (salida,file=sys.stderr)
+       sys.exit(1)
+
   
 payload = {"Content-Type":"application/json",'x-api-user': api_user,'x-api-key': api_key, }
 
@@ -88,7 +111,7 @@ try:
     u=requests.get("https://habitica.com/api/v3/tasks/user", headers=payload,timeout=30)
     U=u.json()
 except:
-    print "No se pudo conectar"
+    print ("No se pudo conectar")
     exit(1)
 
 for i in U["data"]:
@@ -135,7 +158,7 @@ claves.sort()
 
 if args.html or args.htmls:
     if args.htmls:
-        print """
+        print ("""
     <script type="text/javascript">
  setTimeout(function(){window.stop()},30000)
  function swap(targetId){
@@ -149,50 +172,50 @@ if args.html or args.htmls:
                 
   }
 }
-</script>"""
+</script>""")
     #print "<ul>"
-    print '<meta charset="utf-8"/>'
+    print ('<meta charset="utf-8"/>')
     cuentasemana = -1
     for j in claves:
 	if j == datetime.today().toordinal():
-	    print "<ul>\n  <li><dl  onclick=\"swap('today');return false;\"><a style=\"text-decoration: underline;\"><b>Hoy:</b></a></dl><ul id='today' style='display: ;'>"
+	    print ("<ul>\n  <li><dl  onclick=\"swap('today');return false;\"><a style=\"text-decoration: underline;\"><b>Hoy:</b></a></dl><ul id='today' style='display: ;'>")
 	else:
 	    if cuentasemana != datetime.fromordinal(j).isocalendar()[1]-datetime.today().isocalendar()[1]:
 		cuentasemana = datetime.fromordinal(j).isocalendar()[1]-datetime.today().isocalendar()[1]
 		if not j == datetime.today().toordinal() and Firstclose:
-		    print "</div>"
-		    print "</li>\n </ul>"
+		    print ("</div>")
+		    print ("</li>\n </ul>")
 		if cuentasemana:
-		    print "<ul>\n  <li><dl  onclick=\"swap('semana%d');return false;\"><a style=\"text-decoration: underline;\"><b>Dentro de %d semana%s:</b></a></dl>"%(cuentasemana,cuentasemana,"s" if cuentasemana > 1 else "")
-		    print "   <div id='semana%d' style='display:none ;'>\n"%(cuentasemana)
+		    print ("<ul>\n  <li><dl  onclick=\"swap('semana%d');return false;\"><a style=\"text-decoration: underline;\"><b>Dentro de %d semana%s:</b></a></dl>"%(cuentasemana,cuentasemana,"s" if cuentasemana > 1 else ""))
+		    print ("   <div id='semana%d' style='display:none ;'>\n"%(cuentasemana))
 		else:
-		    print "<ul>\n  <li><dl  onclick=\"swap('estasemana');return false;\"><a style=\"text-decoration: underline;\"><b>En esta semana:</b></a></dl>"
-		    print "   <div id='estasemana' style='display: ;'>\n"
+		    print ("<ul>\n  <li><dl  onclick=\"swap('estasemana');return false;\"><a style=\"text-decoration: underline;\"><b>En esta semana:</b></a></dl>")
+		    print ("   <div id='estasemana' style='display: ;'>\n")
     #            cambiasemana = False
                 Firstclose=True
-	    print "   <ul>\n     <li><a>     <i>"+datetime.fromordinal(j).strftime("%s %%d de %s de %%Y"%(semana_es[datetime.fromordinal(j).weekday()],mes[datetime.fromordinal(j).month-1]))+":</i></a>"
-	    print "       <ul>"
+	    print ("   <ul>\n     <li><a>     <i>"+datetime.fromordinal(j).strftime("%s %%d de %s de %%Y"%(semana_es[datetime.fromordinal(j).weekday()],mes[datetime.fromordinal(j).month-1]))+":</i></a>")
+	    print ("       <ul>")
 	for k in calen[j]:
-	    print "        <li><a>          "+k.encode("utf8")+"</a></li>\n"
-	print "       </ul>\n     </li>\n   </ul>\n"
-    print "  </div></li>\n </ul>"
+	    print ("        <li><a>          "+k.encode("utf8")+"</a></li>\n")
+	print ("       </ul>\n     </li>\n   </ul>\n")
+    print ("  </div></li>\n </ul>")
 	#print "</ul>"
 else:
     cuentasemana = -1
     for j in claves:
 	if j == datetime.today().toordinal():
-	    print "Hoy:"
+	    print ("Hoy:")
 	else:
 	    if cuentasemana != datetime.fromordinal(j).isocalendar()[1]-datetime.today().isocalendar()[1]:
 		cuentasemana = datetime.fromordinal(j).isocalendar()[1]-datetime.today().isocalendar()[1]
 		if cuentasemana:
-		    print "Dentro de %d semana%s:"%(cuentasemana,"s" if cuentasemana > 1 else "")
+		    print ("Dentro de %d semana%s:"%(cuentasemana,"s" if cuentasemana > 1 else ""))
 		else:
-		    print "En esta semana:"
+		    print ("En esta semana:")
     #            cambiasemana = False
-	    print "     "+datetime.fromordinal(j).strftime("%s %%d de %s de %%Y"%(semana_es[datetime.fromordinal(j).weekday()],mes[datetime.fromordinal(j).month-1]))+":"
+	    print ("     "+datetime.fromordinal(j).strftime("%s %%d de %s de %%Y"%(semana_es[datetime.fromordinal(j).weekday()],mes[datetime.fromordinal(j).month-1]))+":")
 	for k in calen[j]:
-	    print "          "+k.encode("utf8")+""
+	    print ("          "+k.encode("utf8")+"")
 	
   
                 
